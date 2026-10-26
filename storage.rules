@@ -1,0 +1,13 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    match /organisations/{orgId}/vehicles/{vehicleId}/{allPaths=**} {
+      // Production should add Firestore membership/role claims or custom claims.
+      // Evidence uploads are append-only from authenticated clients; deletion is server/admin only.
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.size < 50 * 1024 * 1024;
+      allow update, delete: if false;
+    }
+  }
+}
