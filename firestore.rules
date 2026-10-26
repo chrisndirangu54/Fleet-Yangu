@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function member(orgId) {
+      return signedIn() && exists(/databases/$(database)/documents/organisations/$(orgId)/members/$(request.auth.uid));
+    }
+    function role(orgId) {
+      return get(/databases/$(database)/documents/organisations/$(orgId)/members/$(request.auth.uid)).data.role;
+    }
+    function admin(orgId) { return member(orgId) && role(orgId) in ['owner','super_admin','admin']; }
+    function operations(orgId) { return member(orgId) && role(orgId) in ['owner','super_admin','admin','dispatcher','safety_officer','mechanic']; }
+    function driver(orgId) { return member(orgId) && role(orgId) == 'driver'; }
+
+    match /organisations/{orgId} {
+      allow read: if member(orgId);
+      allow create: if signedIn();
+      allow update, delete: if admin(orgId);
+
+      match /members/{uid} {
+        allow read: if member(orgId);
+        allow write: if admin(orgId);
+      }
+
+      match /vehicles/{vehicleId} {
+        allow read: if member(orgId);
+        allow create, update, delete: if admin(orgId);
+
+        match /{eventCollection}/{eventId} {
+          allow read: if member(orgId);
+          allow create: if operations(orgId) || driver(orgId);
+          allow update, delete: if false;
+        }
+      }
+
+      match /drivers/{id} {
+        allow read: if member(orgId);
+        allow write: if admin(orgId) || (signedIn() && request.auth.uid == id);
+      }
+
+      match /trips/{id} {
+        allow read: if member(orgId);
+        allow create, update: if operations(orgId) || driver(orgId);
+        allow delete: if admin(orgId);
+      }
+
+      match /alerts/{id} {
+        allow read: if member(orgId);
+        allow create: if false;
+        allow update: if operations(orgId);
+        allow delete: if admin(orgId);
+      }
+
+      match /incidents/{id} {
+        allow read: if member(orgId);
+        allow create: if operations(orgId) || driver(orgId);
+        allow update: if operations(orgId);
+        allow delete: if false;
+      }
+
+      match /workOrders/{id} {
+        allow read: if member(orgId);
+        allow create, update: if operations(orgId);
+        allow delete: if admin(orgId);
+      }
+
+      match /devices/{id} {
+        allow read: if operations(orgId);
+        allow write: if admin(orgId);
+      }
+
+      match /commandRequests/{id} {
+        allow read: if operations(orgId);
+        allow create: if admin(orgId);
+        allow update: if admin(orgId);
+        allow delete: if false;
+      }
+
+      match /auditLogs/{id} {
+        allow read: if admin(orgId);
+        allow write: if false;
+      }
+
+      match /{collection}/{id} {
+        allow read: if member(orgId);
+        allow write: if admin(orgId);
+      }
+    }
+  }
+}
