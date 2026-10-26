@@ -231,13 +231,54 @@ export const ingestVehiclePacket = onRequest(async (req, res) => {
   const allowedKinds = new Set(['telemetry','diagnostics','driverSafetyEvents','cameraEvents','cargoEvents','inspections']);
   if (!allowedKinds.has(kind)) { res.status(400).json({error:'Unsupported packet kind'}); return; }
 
-  const ref = await db.collection('organisations').doc(orgId).collection('vehicles').doc(vehicleId).collection(kind).add({
-    ...payload,
-    deviceId,
-    gatewaySequence: req.body?.sequence ?? null,
-    capturedAt: req.body?.capturedAt ?? null,
-    serverReceivedAt: FieldValue.serverTimestamp(),
-  });
-  await deviceRef.set({lastSeenAt: FieldValue.serverTimestamp()}, {merge:true});
-  res.status(202).json({accepted:true, eventId:ref.id});
+  const sequence = Number(req.body?.sequence);
+  if (!Number.isSafeInteger(sequence) || sequence < 0) {
+    res.status(400).json({error:'A non-negative integer sequence is required'}); return;
+  }
+
+  const eventId = String(req.body?.eventId ?? '');
+  if (!eventId || eventId.length > 128) {
+    res.status(400).json({error:'A valid eventId is required'}); return;
+  }
+
+  const eventRef = db.collection('organisations').doc(orgId)
+    .collection('vehicles').doc(vehicleId).collection(kind).doc(eventId);
+
+  try {
+    await db.runTransaction(async (tx) => {
+      const freshDevice = await tx.get(deviceRef);
+      const device = freshDevice.data() ?? {};
+      const lastSequence = Number(device.lastSequence ?? -1);
+      if (sequence <= lastSequence) {
+        throw new Error('REPLAY_OR_OUT_OF_ORDER');
+      }
+
+      const existingEvent = await tx.get(eventRef);
+      if (existingEvent.exists) {
+        throw new Error('DUPLICATE_EVENT');
+      }
+
+      tx.set(eventRef, {
+        ...payload,
+        deviceId,
+        schemaVersion: String(req.body?.schemaVersion ?? '1.0'),
+        gatewaySequence: sequence,
+        capturedAt: req.body?.capturedAt ?? null,
+        provenance: req.body?.provenance ?? {},
+        serverReceivedAt: FieldValue.serverTimestamp(),
+      });
+      tx.set(deviceRef, {
+        lastSequence: sequence,
+        lastSeenAt: FieldValue.serverTimestamp(),
+      }, {merge:true});
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'INGESTION_REJECTED';
+    if (message === 'REPLAY_OR_OUT_OF_ORDER' || message === 'DUPLICATE_EVENT') {
+      res.status(409).json({error:message}); return;
+    }
+    throw error;
+  }
+
+  res.status(202).json({accepted:true, eventId});
 });
