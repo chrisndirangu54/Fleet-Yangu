@@ -128,3 +128,28 @@ The repository now includes:
 - a SOTA architecture covering edge intelligence, hybrid ML, digital twins, risk graphs, multimodal incident reconstruction, predictive-maintenance feedback loops, offline/satellite operations and SRE telemetry
 
 See `docs/SOTA_ARCHITECTURE.md` for the design direction.
+
+
+## SOTA v3 capabilities
+
+The platform now includes an additional research/production engineering layer:
+
+- **Event-sourced digital twins** with confidence-aware signal reconciliation
+- **Causal risk graphing** across vehicles, drivers, routes, cargo, components, workshops, depots, chargers and suppliers
+- **Twin forecasting** and remaining-useful-life estimation contracts
+- **Feature registry** to reduce training-serving skew and unit/freshness errors
+- **Synthetic vehicle/fault simulation** for coolant leaks, tyre leaks, alternator failures, fuel siphoning and driver fatigue
+- **Hardware-in-the-loop validation ladder** before any vehicle actuation is enabled
+- **Agentic operations proposals** for work orders, driver rest, vehicle swaps, inspections and dispatcher notifications
+- **Evidence-bound AI copilot contract** with confidence, provenance and human-approval boundaries
+- **Model governance** for promotion, calibration and drift review
+- **Security automation** with CodeQL, Dependabot and explicit security policy
+- **Decision-quality observability** and data-retention guidance
+
+See:
+- `docs/HARDWARE_IN_LOOP.md`
+- `docs/AGENTIC_OPERATIONS.md`
+- `docs/FEATURE_STORE.md`
+- `docs/MODEL_GOVERNANCE.md`
+- `docs/OBSERVABILITY.md`
+- `docs/THREAT_MODEL.md`
