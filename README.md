@@ -1,6 +1,6 @@
 # Fleet Yangu
 
-Fleet Yangu is a Flutter + Firebase **fleet intelligence and vehicle operations platform**. It combines fleet tracking, ECU diagnostics, predictive maintenance, driver safety, smart vehicle security, camera/ADAS events, cargo intelligence, incident evidence, cost analytics, compliance and guarded automation in one application.
+Fleet Yangu is a Flutter + Firebase **cyber-physical fleet intelligence and vehicle operations platform**. It combines fleet tracking, ECU diagnostics, predictive maintenance, driver safety, smart vehicle security, camera/ADAS events, cargo intelligence, incident evidence, cost analytics, compliance and guarded automation in one application.
 
 ## What is included
 
@@ -113,3 +113,18 @@ The ECU path is read-only by default. Flutter never sends raw CAN frames. High-r
 - Vehicle actuation must remain hardware-vendor and jurisdiction aware.
 
 See `docs/ARCHITECTURE.md` and `docs/FEATURE_MATRIX.md` for implementation boundaries and the full feature matrix.
+
+
+## SOTA engineering layer
+
+The repository now includes:
+
+- canonical versioned telemetry envelopes with provenance, timestamps and monotonic device sequence numbers
+- replay and duplicate-event rejection at the authenticated gateway boundary
+- deterministic safety thresholds plus an explainable EWMA anomaly detector
+- a zero-trust command-policy mirror for stationary-only and dual-approval controls
+- CI for Flutter analysis/tests and TypeScript Cloud Functions builds
+- baseline unit tests for risk escalation and anomaly detection
+- a SOTA architecture covering edge intelligence, hybrid ML, digital twins, risk graphs, multimodal incident reconstruction, predictive-maintenance feedback loops, offline/satellite operations and SRE telemetry
+
+See `docs/SOTA_ARCHITECTURE.md` for the design direction.
