@@ -173,6 +173,7 @@ export const fleetYanguWorkspaceBridge=onRequest({cors:false},async(req,res)=>{
     const tripId=hash(workspaceOrgId+':'+dispatchId).slice(0,40);
     const trip=org.collection('trips').doc(tripId);
     let duplicate=false;
+    let dispatchStatus='awaiting_fleet_dispatcher_review';
     await db().runTransaction(async tx=>{
       const existing=await tx.get(trip);
       if(existing.exists) {
@@ -180,14 +181,16 @@ export const fleetYanguWorkspaceBridge=onRequest({cors:false},async(req,res)=>{
            existing.data()?.vehicleId!==vehicleId||
            existing.data()?.sourceShipmentId!==shipmentId)
           throw new Error('Dispatch identity conflict');
-        duplicate=true;return;
+        duplicate=true;
+        dispatchStatus=String(existing.data()?.status||'awaiting_fleet_dispatcher_review');
+        return;
       }
       tx.create(trip,{source:'tekntandao_workspace',workspaceOrgId,sourceDispatchId:dispatchId,
         sourceShipmentId:shipmentId,reference,destination,weightKg,vehicleId,
         status:'awaiting_fleet_dispatcher_review',createdAt:FieldValue.serverTimestamp()});
     });
     res.status(200).json({accepted:true,duplicate,tripId,
-      status:'awaiting_fleet_dispatcher_review',
+      status:dispatchStatus,
       notice:'Dispatch request recorded, not physically dispatched and no vehicle controls executed'});
   }catch(error){
     // Never reveal tenant identifiers, device identities or credential internals.
