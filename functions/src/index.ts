@@ -282,3 +282,6 @@ export const ingestVehiclePacket = onRequest(async (req, res) => {
 
   res.status(202).json({accepted:true, eventId});
 });
+
+export {fleetYanguIssueWorkspaceKey,fleetYanguRevokeWorkspaceKey,fleetYanguWorkspaceBridge}
+  from './workspace_bridge';
