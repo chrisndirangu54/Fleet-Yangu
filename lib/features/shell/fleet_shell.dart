@@ -242,7 +242,7 @@ class _ModulePage extends StatelessWidget {
 
 class _SafetyBanner extends StatelessWidget {
   const _SafetyBanner();
-  @override Widget build(BuildContext context) => const Card(child: ListTile(leading: Icon(Icons.shield_outlined), title: const Text('Safety-first control plane'), subtitle: const Text('ECU and safety-critical actuator commands remain read-only or disabled by default. Any future vehicle control requires signed commands, role approval, vehicle-state validation and an auditable trusted gateway.')));
+  @override Widget build(BuildContext context) => const Card(child: ListTile(leading: Icon(Icons.shield_outlined), title: Text('Safety-first control plane'), subtitle: Text('ECU and safety-critical actuator commands remain read-only or disabled by default. Any future vehicle control requires signed commands, role approval, vehicle-state validation and an auditable trusted gateway.')));
 }
 
 class _VehiclesPage extends StatelessWidget {
