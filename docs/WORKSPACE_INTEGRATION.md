@@ -32,3 +32,7 @@ The existing ingestion endpoint (`ingestVehiclePacket`) remains separate; no dev
 - Current Fleet Yangu command-control/immobilization features are **not** integrated, even when dispatch is enabled.
 - The UI in other Fleet Yangu modules still contains demonstration telemetry; only backend records are exported. Validate device connectivity and the freshness of `lastTelemetryAt` before interpreting risk scores.
 - The integration has no automatic background synchronization or notification service yet: Workspace pulls snapshots on demand. Future versions could include event-driven delta sync after consent and retention tests.
+
+## Dispatcher review and status feedback
+
+Fleet Yangu's **Workspace Dispatch Inbox** displays real source-tagged trip requests (rather than demo records). An authenticated organization dispatcher, admin, super admin or owner can accept or decline via the `fleetYanguReviewWorkspaceDispatch` callable. Direct Firestore writes to Workspace-originated trips are denied for all clients, including administrators; only server-side functions may alter them. The authorization-scoped `GET /v1/dispatch-status?dispatchId=<shipmentId>` endpoint exposes the resulting review status to the matching Workspace. The dispatcher review does not itself mark the truck moving, book a carrier or send commands to any vehicle.
