@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../admin/workspace_connection_panel.dart';
+import '../dispatch/workspace_dispatch_inbox.dart';
 import '../../data/demo_data.dart';
 import '../../models/fleet_models.dart';
 import '../../services/risk_engine.dart';
@@ -50,6 +51,7 @@ class _FleetShellState extends State<FleetShell> {
     if (selected == 'risk') return const _RiskPage();
     if (selected == 'alerts') return const _AlertsPage();
     if (selected == 'admin') return const _AdminPage();
+    if (selected == 'workspace_dispatch') return const WorkspaceDispatchInbox();
     FleetModule? module;
     for (final item in fleetModules) {
       if (item.id == selected) { module = item; break; }
@@ -88,6 +90,7 @@ class _Navigation extends StatelessWidget {
           const Padding(padding: EdgeInsets.fromLTRB(20, 8, 16, 4), child: Text('SYSTEMS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
           ...fleetModules.map((m) => _nav(m.id, m.title, _iconFor(m.id))),
           const Divider(),
+          _nav('workspace_dispatch', 'Workspace Dispatch Inbox', Icons.inbox_outlined),
           _nav('admin', 'Admin & Security', Icons.admin_panel_settings_outlined),
         ],
       ),
