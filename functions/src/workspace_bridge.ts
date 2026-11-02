@@ -43,14 +43,15 @@ export const fleetYanguRevokeWorkspaceKey=onCall(async request=>{
 });
 
 export const fleetYanguReviewWorkspaceDispatch=onCall(async request=>{
-  if(!request.auth?.uid)throw new HttpsError('unauthenticated','Sign in');
+  const uid=request.auth?.uid;
+  if(!uid)throw new HttpsError('unauthenticated','Sign in');
   const organisationId=id(request.data?.organisationId);
   const tripId=id(request.data?.tripId);
   const decision=request.data?.decision;
   if(!['accepted','declined'].includes(decision))
     throw new HttpsError('invalid-argument','Choose accepted or declined');
   const org=db().collection('organisations').doc(organisationId);
-  const member=(await org.collection('members').doc(request.auth.uid).get()).data();
+  const member=(await org.collection('members').doc(uid).get()).data();
   if(!member||!['owner','super_admin','admin','dispatcher'].includes(member.role))
     throw new HttpsError('permission-denied','Fleet dispatcher permission required');
   const trip=org.collection('trips').doc(tripId);
@@ -58,10 +59,10 @@ export const fleetYanguReviewWorkspaceDispatch=onCall(async request=>{
     const record=await tx.get(trip);
     if(!record.exists||record.data()?.source!=='tekntandao_workspace')
       throw new HttpsError('not-found','Workspace dispatch request not found');
-    if(record.data().status!=='awaiting_fleet_dispatcher_review')
+    if(record.data()?.status!=='awaiting_fleet_dispatcher_review')
       throw new HttpsError('failed-precondition','Dispatch was already reviewed');
     tx.update(trip,{status:decision,
-      reviewedBy:request.auth.uid,reviewedAt:FieldValue.serverTimestamp()});
+      reviewedBy:uid,reviewedAt:FieldValue.serverTimestamp()});
     return {tripId,status:decision};
   });
 });
