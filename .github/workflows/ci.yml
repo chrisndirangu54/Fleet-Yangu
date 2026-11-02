@@ -29,4 +29,4 @@ jobs:
           node-version: 20
       - run: npm install
       - run: npm run build
-      - run: node --test lib/tests/workspace_bridge.test.js
+      - run: node --test lib/tests/workspace_bridge.test.js lib/tests/bima_guardian_domain.test.js
