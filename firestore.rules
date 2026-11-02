@@ -81,9 +81,15 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Integration credentials are server-only, including token digests.
+      // A general collection wildcard must not override this restriction.
+      match /workspaceConnections/{workspaceOrgId} {
+        allow read, write: if false;
+      }
+
       match /{collection}/{id} {
-        allow read: if member(orgId);
-        allow write: if admin(orgId);
+        allow read: if collection != 'workspaceConnections' && member(orgId);
+        allow write: if collection != 'workspaceConnections' && admin(orgId);
       }
     }
   }
