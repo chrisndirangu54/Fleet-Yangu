@@ -98,9 +98,19 @@ service cloud.firestore {
         allow read, write: if false;
       }
 
+      // Bima Guardian consent, quote, policy and claim records contain
+      // financial and risk information. Cloud Functions are the only readers.
+      match /insurancePermissions/{id} { allow read, write: if false; }
+      match /insuranceQuotes/{id} { allow read, write: if false; }
+      match /insurancePolicies/{id} { allow read, write: if false; }
+      match /insuranceClaims/{id} { allow read, write: if false; }
       match /{collection}/{id} {
-        allow read: if collection != 'workspaceConnections' && member(orgId);
-        allow write: if collection != 'workspaceConnections' && collection != 'trips' && admin(orgId);
+        allow read: if !(collection in ['workspaceConnections',
+          'insurancePermissions','insuranceQuotes','insurancePolicies',
+          'insuranceClaims']) && member(orgId);
+        allow write: if !(collection in ['workspaceConnections','trips',
+          'insurancePermissions','insuranceQuotes','insurancePolicies',
+          'insuranceClaims']) && admin(orgId);
       }
     }
   }
