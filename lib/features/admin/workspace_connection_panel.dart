@@ -14,6 +14,8 @@ class FleetYanguWorkspaceConnectionPanel extends StatefulWidget {
 class _FleetYanguWorkspaceConnectionPanelState extends State<FleetYanguWorkspaceConnectionPanel> {
   final fleetOrg = TextEditingController();
   final workspaceOrg = TextEditingController();
+  final email = TextEditingController();
+  final password = TextEditingController();
   bool busy = false;
   bool allowDispatch = false;
   String? message;
@@ -22,7 +24,25 @@ class _FleetYanguWorkspaceConnectionPanelState extends State<FleetYanguWorkspace
   void dispose() {
     fleetOrg.dispose();
     workspaceOrg.dispose();
+    email.dispose();
+    password.dispose();
     super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    setState(() { busy = true; message = null; });
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email.text.trim(), password: password.text);
+      password.clear();
+      if (mounted) setState(() => message = 'Signed in. Only Fleet Yangu organization '
+        'owners may issue or revoke integration keys.');
+    } catch (error) {
+      if (mounted) setState(() => message = 'Authentication failed: $error');
+    } finally {
+      password.clear();
+      if (mounted) setState(() => busy = false);
+    }
   }
 
   Future<void> _run(String functionName, {bool issue = false}) async {
@@ -87,6 +107,19 @@ class _FleetYanguWorkspaceConnectionPanelState extends State<FleetYanguWorkspace
           'vehicle health, diagnostic summaries and maintenance alerts. '
           'Dispatch handoff is optional and requires separate permission. '
           'No hardware controls or driver health data are shared.'),
+        const SizedBox(height: 14),
+        if (FirebaseAuth.instance.currentUser == null) ...[
+          const Text('Authenticate first with an existing Fleet Yangu owner '
+            'account. Email/password authentication must be enabled in Firebase.'),
+          const SizedBox(height: 8),
+          TextField(controller: email,
+            decoration: const InputDecoration(labelText: 'Owner email')),
+          TextField(controller: password, obscureText: true,
+            decoration: const InputDecoration(labelText: 'Password')),
+          const SizedBox(height: 8),
+          FilledButton(onPressed: busy ? null : _signIn,
+            child: const Text('Sign in')),
+        ] else Text('Signed in: ${FirebaseAuth.instance.currentUser?.email ?? 'owner'}'),
         const SizedBox(height: 14),
         TextField(controller: fleetOrg,
           decoration: const InputDecoration(labelText: 'Fleet Yangu organisation ID')),
