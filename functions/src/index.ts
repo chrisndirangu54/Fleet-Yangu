@@ -285,3 +285,7 @@ export const ingestVehiclePacket = onRequest(async (req, res) => {
 
 export {fleetYanguIssueWorkspaceKey,fleetYanguRevokeWorkspaceKey,fleetYanguWorkspaceBridge,fleetYanguReviewWorkspaceDispatch}
   from './workspace_bridge';
+
+export {fleetYanguAuthorizeBimaGuardian,fleetYanguInsuranceOverview,
+  fleetYanguRequestBimaQuote,fleetYanguRecordInsurancePolicy,
+  fleetYanguDraftInsuranceClaim} from './bima_guardian_insurance';
