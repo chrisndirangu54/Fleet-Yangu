@@ -62,15 +62,17 @@ export const fleetYanguAuthorizeBimaGuardian=wrap(async req=>{
 });
 export const fleetYanguInsuranceOverview=wrap(async req=>{
   const {org}=await context(req);
-  const [consent,policies,quotes,claims]=await Promise.all([
+  const [consent,policies,quotes,claims,vehicles]=await Promise.all([
     org.collection('insurancePermissions').doc('bimaGuardian').get(),
     org.collection('insurancePolicies').limit(80).get(),
     org.collection('insuranceQuotes').limit(60).get(),
     org.collection('insuranceClaims').limit(60).get(),
+    org.collection('vehicles').limit(100).get(),
   ]);
   const permission=consent.data()||{};
   return {provider:'bima_guardian',connected:false,liveInsurerVerification:false,
     consentActive:permission.enabled===true&&permission.expiresAtMs>Date.now(),
+    vehicles:vehicles.docs.map(d=>({id:d.id,registration:String(d.get('registration')||'').slice(0,30)})),
     policies:policies.docs.map(d=>({id:d.id,...d.data(),
       renewal:renewalStatus(d.data())})),
     quotes:quotes.docs.map(d=>({id:d.id,...d.data()})),
