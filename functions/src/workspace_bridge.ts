@@ -42,6 +42,30 @@ export const fleetYanguRevokeWorkspaceKey=onCall(async request=>{
   return {revoked:true};
 });
 
+export const fleetYanguReviewWorkspaceDispatch=onCall(async request=>{
+  if(!request.auth?.uid)throw new HttpsError('unauthenticated','Sign in');
+  const organisationId=id(request.data?.organisationId);
+  const tripId=id(request.data?.tripId);
+  const decision=request.data?.decision;
+  if(!['accepted','declined'].includes(decision))
+    throw new HttpsError('invalid-argument','Choose accepted or declined');
+  const org=db().collection('organisations').doc(organisationId);
+  const member=(await org.collection('members').doc(request.auth.uid).get()).data();
+  if(!member||!['owner','super_admin','admin','dispatcher'].includes(member.role))
+    throw new HttpsError('permission-denied','Fleet dispatcher permission required');
+  const trip=org.collection('trips').doc(tripId);
+  return db().runTransaction(async tx=>{
+    const record=await tx.get(trip);
+    if(!record.exists||record.data()?.source!=='tekntandao_workspace')
+      throw new HttpsError('not-found','Workspace dispatch request not found');
+    if(record.data().status!=='awaiting_fleet_dispatcher_review')
+      throw new HttpsError('failed-precondition','Dispatch was already reviewed');
+    tx.update(trip,{status:decision,
+      reviewedBy:request.auth.uid,reviewedAt:FieldValue.serverTimestamp()});
+    return {tripId,status:decision};
+  });
+});
+
 export function safeVehicleSummary(vehicleId:string,data:any) {
   const live=data?.live||{};
   const n=(key:string,min:number,max:number)=>{
@@ -90,7 +114,23 @@ export const fleetYanguWorkspaceBridge=onRequest({cors:false},async(req,res)=>{
       permission(res,401);return;
     }
     if(req.method==='GET'){
-      if(req.path!=='/v1/vehicles'){res.status(404).json({error:'Not found'});return;}
+      if(req.path.endsWith('/v1/dispatch-status')){
+        const dispatchId=id(req.query?.dispatchId);
+        const tripId=hash(workspaceOrgId+':'+dispatchId).slice(0,40);
+        const trip=(await org.collection('trips').doc(tripId).get()).data();
+        if(!trip||trip.source!=='tekntandao_workspace'||
+            trip.workspaceOrgId!==workspaceOrgId||
+            trip.sourceDispatchId!==dispatchId){
+          res.status(404).json({error:'Dispatch request not found'});return;
+        }
+        res.status(200).json({tripId,sourceDispatchId:dispatchId,
+          status:trip.status||'unknown',
+          reviewedAt:iso(trip.reviewedAt),source:'fleet_yangu'});
+        return;
+      }
+      if(!req.path.endsWith('/v1/vehicles')){
+        res.status(404).json({error:'Not found'});return;
+      }
       const [vehicles,alerts,orders]=await Promise.all([
         org.collection('vehicles').limit(100).get(),
         org.collection('alerts').limit(100).get(),
@@ -114,7 +154,7 @@ export const fleetYanguWorkspaceBridge=onRequest({cors:false},async(req,res)=>{
         sampled:true,limitedTo:100});
       return;
     }
-    if(req.path!=='/v1/dispatch'){res.status(404).json({error:'Not found'});return;}
+    if(!req.path.endsWith('/v1/dispatch')){res.status(404).json({error:'Not found'});return;}
     if(connection.allowDispatch!==true){permission(res,403);return;}
     const body=req.body||{};
     const dispatchId=id(body.dispatchId);
