@@ -54,12 +54,12 @@ export function policyRecord(input:any) {
     verificationStatus:'unverified',insuranceStatus:'record_only'};
 }
 export function renewalStatus(policy:any, today=new Date()) {
-  if(policy?.verificationStatus!=='insurer_confirmed')
-    return {label:'coverage_unverified',daysToExpiry:null,activeCoverage:false};
-  const expiry=Date.parse(policy.expiresOn+'T00:00:00Z');
+  const verified=policy?.verificationStatus==='insurer_confirmed';
+  const expiry=Date.parse(String(policy?.expiresOn||'')+'T00:00:00Z');
   if(!Number.isFinite(expiry))return {label:'invalid_expiry',daysToExpiry:null,activeCoverage:false};
   const midnight=Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate());
   const days=Math.round((expiry-midnight)/86400000);
-  return {label:days<0?'expired':days<=30?'renewal_due':'recorded',
-    daysToExpiry:days,activeCoverage:false}; // Bima provider verification is not yet connected
+  return {label:(days<0?'expired':days<=30?'renewal_due':'recorded')+
+      (verified?'':'_unverified'),
+    daysToExpiry:days,activeCoverage:false}; // provider verification is not connected
 }
