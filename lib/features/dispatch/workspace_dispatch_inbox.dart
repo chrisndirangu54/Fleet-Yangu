@@ -54,9 +54,13 @@ class _WorkspaceDispatchInboxState extends State<WorkspaceDispatchInbox> {
         ));
       }
     } catch (e) {
-      if (mounted) setState(() => error = e.toString());
+      if (mounted) {
+        setState(() => error = e.toString());
+      }
     } finally {
-      if (mounted) setState(() => submitting = false);
+      if (mounted) {
+        setState(() => submitting = false);
+      }
     }
   }
 
