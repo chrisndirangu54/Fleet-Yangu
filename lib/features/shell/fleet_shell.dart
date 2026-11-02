@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../admin/workspace_connection_panel.dart';
+import '../dispatch/workspace_dispatch_inbox.dart';
+import '../insurance/bima_guardian_screen.dart';
 import '../../data/demo_data.dart';
 import '../../models/fleet_models.dart';
 import '../../services/risk_engine.dart';
@@ -49,6 +52,8 @@ class _FleetShellState extends State<FleetShell> {
     if (selected == 'risk') return const _RiskPage();
     if (selected == 'alerts') return const _AlertsPage();
     if (selected == 'admin') return const _AdminPage();
+    if (selected == 'workspace_dispatch') return const WorkspaceDispatchInbox();
+    if (selected == 'bima_guardian') return const BimaGuardianFleetScreen();
     FleetModule? module;
     for (final item in fleetModules) {
       if (item.id == selected) { module = item; break; }
@@ -87,6 +92,8 @@ class _Navigation extends StatelessWidget {
           const Padding(padding: EdgeInsets.fromLTRB(20, 8, 16, 4), child: Text('SYSTEMS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
           ...fleetModules.map((m) => _nav(m.id, m.title, _iconFor(m.id))),
           const Divider(),
+          _nav('workspace_dispatch', 'Workspace Dispatch Inbox', Icons.inbox_outlined),
+          _nav('bima_guardian', 'Bima Guardian Insurance', Icons.shield_outlined),
           _nav('admin', 'Admin & Security', Icons.admin_panel_settings_outlined),
         ],
       ),
@@ -131,7 +138,7 @@ class _Dashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final engine = FleetRiskEngine();
+    const engine = FleetRiskEngine();
     final avgHealth = demoVehicles.map((e) => e.healthScore).reduce((a,b)=>a+b) / demoVehicles.length;
     final highRisk = demoVehicles.where((v) => engine.assess(v).level.index >= RiskLevel.high.index).length;
     return ListView(
@@ -238,12 +245,12 @@ class _ModulePage extends StatelessWidget {
 
 class _SafetyBanner extends StatelessWidget {
   const _SafetyBanner();
-  @override Widget build(BuildContext context) => Card(child: ListTile(leading: const Icon(Icons.shield_outlined), title: const Text('Safety-first control plane'), subtitle: const Text('ECU and safety-critical actuator commands remain read-only or disabled by default. Any future vehicle control requires signed commands, role approval, vehicle-state validation and an auditable trusted gateway.')));
+  @override Widget build(BuildContext context) => const Card(child: ListTile(leading: Icon(Icons.shield_outlined), title: Text('Safety-first control plane'), subtitle: Text('ECU and safety-critical actuator commands remain read-only or disabled by default. Any future vehicle control requires signed commands, role approval, vehicle-state validation and an auditable trusted gateway.')));
 }
 
 class _VehiclesPage extends StatelessWidget {
   const _VehiclesPage();
-  @override Widget build(BuildContext context) { final engine = FleetRiskEngine(); return ListView(padding: const EdgeInsets.all(24), children: [Text('Vehicles & Digital Twins', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text('A persistent lifecycle record for mechanical condition, parts, service, drivers, incidents, fuel, tyres, cargo and operating cost.'), const SizedBox(height: 16), ...demoVehicles.map((v)=>_VehicleCard(vehicle:v, assessment:engine.assess(v)))]); }
+  @override Widget build(BuildContext context) { const engine = FleetRiskEngine(); return ListView(padding: const EdgeInsets.all(24), children: [Text('Vehicles & Digital Twins', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text('A persistent lifecycle record for mechanical condition, parts, service, drivers, incidents, fuel, tyres, cargo and operating cost.'), const SizedBox(height: 16), ...demoVehicles.map((v)=>_VehicleCard(vehicle:v, assessment:engine.assess(v)))]); }
 }
 
 class _RiskPage extends StatelessWidget {
@@ -251,7 +258,7 @@ class _RiskPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final engine = FleetRiskEngine();
+    const engine = FleetRiskEngine();
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -351,6 +358,8 @@ class _AdminPage extends StatelessWidget {
         const SizedBox(height: 8),
         const Text('Organisation controls, device trust, model settings, API integrations, roles and high-security approvals.'),
         const SizedBox(height: 16),
+        const FleetYanguWorkspaceConnectionPanel(),
+        const SizedBox(height: 12),
         ...adminCards.map(
           (e) => Card(
             child: ListTile(

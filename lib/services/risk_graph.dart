@@ -83,7 +83,7 @@ class FleetRiskGraph {
       }
     }
 
-    final score = weight <= 0 ? 0 : (weighted / weight).clamp(0.0, 100.0);
+    final score = weight <= 0 ? 0.0 : (weighted / weight).clamp(0.0, 100.0).toDouble();
     return RiskGraphResult(score, explanations.take(5).toList());
   }
 }

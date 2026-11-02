@@ -6,7 +6,7 @@ void main() {
 
   test('detects a large deviation after baseline learning', () {
     EwmaState? state;
-    for (final value in [90.0, 91, 89, 90, 91, 90, 89, 90, 91, 90, 89, 90]) {
+    for (final value in <double>[90, 91, 89, 90, 91, 90, 89, 90, 91, 90, 89, 90]) {
       state = engine.update(state, value);
     }
 

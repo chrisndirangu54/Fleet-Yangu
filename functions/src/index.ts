@@ -282,3 +282,10 @@ export const ingestVehiclePacket = onRequest(async (req, res) => {
 
   res.status(202).json({accepted:true, eventId});
 });
+
+export {fleetYanguIssueWorkspaceKey,fleetYanguRevokeWorkspaceKey,fleetYanguWorkspaceBridge,fleetYanguReviewWorkspaceDispatch}
+  from './workspace_bridge';
+
+export {fleetYanguAuthorizeBimaGuardian,fleetYanguInsuranceOverview,
+  fleetYanguRequestBimaQuote,fleetYanguRecordInsurancePolicy,
+  fleetYanguDraftInsuranceClaim} from './bima_guardian_insurance';

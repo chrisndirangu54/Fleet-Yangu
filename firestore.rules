@@ -40,8 +40,19 @@ service cloud.firestore {
 
       match /trips/{id} {
         allow read: if member(orgId);
-        allow create, update: if operations(orgId) || driver(orgId);
-        allow delete: if admin(orgId);
+        // Workspace-originated dispatch records are written/reviewed only by
+        // privileged Cloud Functions, not altered directly by mobile clients.
+        allow create: if (operations(orgId) || driver(orgId)) &&
+          (!('source' in request.resource.data) ||
+            request.resource.data.source != 'tekntandao_workspace');
+        allow update: if (operations(orgId) || driver(orgId)) &&
+          (!('source' in resource.data) ||
+            resource.data.source != 'tekntandao_workspace') &&
+          (!('source' in request.resource.data) ||
+            request.resource.data.source != 'tekntandao_workspace');
+        allow delete: if admin(orgId) &&
+          (!('source' in resource.data) ||
+            resource.data.source != 'tekntandao_workspace');
       }
 
       match /alerts/{id} {
@@ -81,9 +92,25 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Integration credentials are server-only, including token digests.
+      // A general collection wildcard must not override this restriction.
+      match /workspaceConnections/{workspaceOrgId} {
+        allow read, write: if false;
+      }
+
+      // Bima Guardian consent, quote, policy and claim records contain
+      // financial and risk information. Cloud Functions are the only readers.
+      match /insurancePermissions/{id} { allow read, write: if false; }
+      match /insuranceQuotes/{id} { allow read, write: if false; }
+      match /insurancePolicies/{id} { allow read, write: if false; }
+      match /insuranceClaims/{id} { allow read, write: if false; }
       match /{collection}/{id} {
-        allow read: if member(orgId);
-        allow write: if admin(orgId);
+        allow read: if !(collection in ['workspaceConnections',
+          'insurancePermissions','insuranceQuotes','insurancePolicies',
+          'insuranceClaims']) && member(orgId);
+        allow write: if !(collection in ['workspaceConnections','trips',
+          'insurancePermissions','insuranceQuotes','insurancePolicies',
+          'insuranceClaims']) && admin(orgId);
       }
     }
   }
