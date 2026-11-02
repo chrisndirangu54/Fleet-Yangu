@@ -28,8 +28,7 @@ class _WorkspaceDispatchInboxState extends State<WorkspaceDispatchInbox> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text((decision == 'accepted' ? 'Accept' : 'Decline') +
-            ' dispatch request?'),
+        title: Text("${decision == 'accepted' ? 'Accept' : 'Decline'} dispatch request?"),
         content: const Text('This records a dispatcher decision in Fleet Yangu. '
             'It does not actuate any vehicle or automatically start a trip.'),
         actions: [
@@ -49,8 +48,7 @@ class _WorkspaceDispatchInboxState extends State<WorkspaceDispatchInbox> {
             'decision': decision});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Dispatch request ' +
-              (decision == 'accepted' ? 'accepted' : 'declined')),
+          content: Text("Dispatch request ${decision == 'accepted' ? 'accepted' : 'declined'}"),
         ));
       }
     } catch (e) {
@@ -115,8 +113,7 @@ class _WorkspaceDispatchInboxState extends State<WorkspaceDispatchInbox> {
               .limit(50).snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Text('Unable to load requests: ' +
-                  snapshot.error.toString());
+              return Text('Unable to load requests: ${snapshot.error}');
             }
             if (!snapshot.hasData) return const LinearProgressIndicator();
             final items = snapshot.data!.docs;
@@ -129,12 +126,8 @@ class _WorkspaceDispatchInboxState extends State<WorkspaceDispatchInbox> {
               final status = data['status']?.toString() ?? 'unknown';
               return Card(child: ListTile(
                 leading: const Icon(Icons.local_shipping_outlined),
-                title: Text((data['reference'] ?? 'Shipment').toString() +
-                    ' · ' + (data['destination'] ?? '-').toString()),
-                subtitle: Text('Vehicle: ' +
-                    (data['vehicleId'] ?? '-').toString() +
-                    ' · Weight ' + (data['weightKg'] ?? '-').toString() +
-                    ' kg · Status: ' + status),
+                title: Text("${data['reference'] ?? 'Shipment'} · ${data['destination'] ?? '-'}"),
+                subtitle: Text("Vehicle: ${data['vehicleId'] ?? '-'} · Weight ${data['weightKg'] ?? '-'} kg · Status: $status"),
                 trailing: status == 'awaiting_fleet_dispatcher_review'
                     ? Wrap(spacing: 6, children: [
                         TextButton(
