@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../admin/workspace_connection_panel.dart';
 import '../dispatch/workspace_dispatch_inbox.dart';
+import '../insurance/bima_guardian_screen.dart';
 import '../../data/demo_data.dart';
 import '../../models/fleet_models.dart';
 import '../../services/risk_engine.dart';
@@ -52,6 +53,7 @@ class _FleetShellState extends State<FleetShell> {
     if (selected == 'alerts') return const _AlertsPage();
     if (selected == 'admin') return const _AdminPage();
     if (selected == 'workspace_dispatch') return const WorkspaceDispatchInbox();
+    if (selected == 'bima_guardian') return const BimaGuardianFleetScreen();
     FleetModule? module;
     for (final item in fleetModules) {
       if (item.id == selected) { module = item; break; }
@@ -91,6 +93,7 @@ class _Navigation extends StatelessWidget {
           ...fleetModules.map((m) => _nav(m.id, m.title, _iconFor(m.id))),
           const Divider(),
           _nav('workspace_dispatch', 'Workspace Dispatch Inbox', Icons.inbox_outlined),
+          _nav('bima_guardian', 'Bima Guardian Insurance', Icons.shield_outlined),
           _nav('admin', 'Admin & Security', Icons.admin_panel_settings_outlined),
         ],
       ),
