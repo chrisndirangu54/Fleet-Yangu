@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../admin/workspace_connection_panel.dart';
 import '../../data/demo_data.dart';
 import '../../models/fleet_models.dart';
 import '../../services/risk_engine.dart';
@@ -351,6 +352,8 @@ class _AdminPage extends StatelessWidget {
         const SizedBox(height: 8),
         const Text('Organisation controls, device trust, model settings, API integrations, roles and high-security approvals.'),
         const SizedBox(height: 16),
+        const FleetYanguWorkspaceConnectionPanel(),
+        const SizedBox(height: 12),
         ...adminCards.map(
           (e) => Card(
             child: ListTile(
