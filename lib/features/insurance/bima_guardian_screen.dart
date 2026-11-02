@@ -167,11 +167,22 @@ class _BimaGuardianFleetScreenState extends State<BimaGuardianFleetScreen> {
           label:const Text('Request indicative quotation')),
         _heading('Quote history'),
         if(_rows('quotes').isEmpty)const Text('No quote requests yet.'),
-        ..._rows('quotes').take(12).map((q)=>ListTile(
+        ..._rows('quotes').take(12).map((q)=>ExpansionTile(
           leading:const Icon(Icons.price_check_outlined),
           title:Text("Vehicle ${q['vehicleId']} · ${q['subtype']}"),
-          subtitle:Text("Source: ${q['source']} · ${q['status']}"),
-          trailing:Text("${(q['options'] as List? ?? const []).length} options"),
+          subtitle:Text("Source: ${q['source']} · ${q['status']} "
+            "· NOT insurer-confirmed"),
+          children:[
+            if(q['source']=='demo')const ListTile(
+              title:Text('Demonstration premium estimates only'),
+              subtitle:Text('No approved insurer rate card or binding cover is established.')),
+            ...((q['options'] as List? ?? const []).whereType<Map>().map((o)=>
+              ListTile(
+                title:Text(o['insurerName']?.toString()??'Unverified insurer'),
+                subtitle:Text('Indicative premium, not a binding offer'),
+                trailing:Text("KES ${o['estimatedPremiumKes'] ?? '-'}"),
+              ))),
+          ],
         )),
         _heading('Record an existing insurance policy'),
         const Text('Manually entered policies are NOT automatically verified '
