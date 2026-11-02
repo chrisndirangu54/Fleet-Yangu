@@ -5,7 +5,7 @@ import {onCall, onRequest, HttpsError} from 'firebase-functions/v2/https';
 import {createHash,randomBytes,timingSafeEqual} from 'node:crypto';
 import {getFirestore,FieldValue} from 'firebase-admin/firestore';
 
-const db=getFirestore();
+const db=()=>getFirestore();
 const id=(value:unknown)=> {
   if(typeof value!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(value))
     throw new Error('Invalid identifier');
@@ -16,7 +16,7 @@ const iso=(value:any)=>value?.toDate?.()?.toISOString?.()||null;
 async function owner(request:any) {
   if(!request.auth?.uid)throw new HttpsError('unauthenticated','Sign in');
   const orgId=id(request.data?.organisationId);
-  const org=db.collection('organisations').doc(orgId);
+  const org=db().collection('organisations').doc(orgId);
   const member=(await org.collection('members').doc(request.auth.uid).get()).data();
   if(!member||!['owner','super_admin'].includes(member.role))
     throw new HttpsError('permission-denied','Fleet Yangu organization owner required');
@@ -78,7 +78,7 @@ export const fleetYanguWorkspaceBridge=onRequest({cors:false},async(req,res)=>{
       permission(res,401);return;
     }
     const secret=authorization.slice(7);
-    const org=db.collection('organisations').doc(fleetOrgId);
+    const org=db().collection('organisations').doc(fleetOrgId);
     const connection=(await org.collection('workspaceConnections').doc(workspaceOrgId).get()).data();
     if(!connection?.enabled||!Number.isFinite(connection.expiresAt)||
        connection.expiresAt<=Date.now()||typeof connection.tokenHash!=='string'){
@@ -132,7 +132,7 @@ export const fleetYanguWorkspaceBridge=onRequest({cors:false},async(req,res)=>{
     const tripId=hash(workspaceOrgId+':'+dispatchId).slice(0,40);
     const trip=org.collection('trips').doc(tripId);
     let duplicate=false;
-    await db.runTransaction(async tx=>{
+    await db().runTransaction(async tx=>{
       const existing=await tx.get(trip);
       if(existing.exists) {
         if(existing.data()?.sourceDispatchId!==dispatchId||
