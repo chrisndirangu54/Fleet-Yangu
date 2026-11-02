@@ -35,13 +35,19 @@ class _FleetYanguWorkspaceConnectionPanelState extends State<FleetYanguWorkspace
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email.text.trim(), password: password.text);
       password.clear();
-      if (mounted) setState(() => message = 'Signed in. Only Fleet Yangu organization '
-        'owners may issue or revoke integration keys.');
+      if (mounted) {
+        setState(() => message = 'Signed in. Only Fleet Yangu organization '
+          'owners may issue or revoke integration keys.');
+      }
     } catch (error) {
-      if (mounted) setState(() => message = 'Authentication failed: $error');
+      if (mounted) {
+        setState(() => message = 'Authentication failed: $error');
+      }
     } finally {
       password.clear();
-      if (mounted) setState(() => busy = false);
+      if (mounted) {
+        setState(() => busy = false);
+      }
     }
   }
 
@@ -77,7 +83,9 @@ class _FleetYanguWorkspaceConnectionPanelState extends State<FleetYanguWorkspace
             TextButton.icon(
               onPressed: () async {
                 await Clipboard.setData(ClipboardData(text: token));
-                if (ctx.mounted) Navigator.pop(ctx);
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                }
               },
               icon: const Icon(Icons.copy), label: const Text('Copy and close')),
             TextButton(onPressed: () => Navigator.pop(ctx),
@@ -85,13 +93,19 @@ class _FleetYanguWorkspaceConnectionPanelState extends State<FleetYanguWorkspace
           ],
         ));
       }
-      if (mounted) setState(() => message = issue
-        ? 'Workspace integration key issued for ${workspaceOrg.text.trim()}.'
-        : 'Workspace access revoked. Disconnect it inside Workspace as well.');
+      if (mounted) {
+        setState(() => message = issue
+          ? 'Workspace integration key issued for ${workspaceOrg.text.trim()}.'
+          : 'Workspace access revoked. Disconnect it inside Workspace as well.');
+      }
     } catch (error) {
-      if (mounted) setState(() => message = 'Integration request failed: $error');
+      if (mounted) {
+        setState(() => message = 'Integration request failed: $error');
+      }
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (mounted) {
+        setState(() => busy = false);
+      }
     }
   }
 
