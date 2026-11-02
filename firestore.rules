@@ -40,8 +40,19 @@ service cloud.firestore {
 
       match /trips/{id} {
         allow read: if member(orgId);
-        allow create, update: if operations(orgId) || driver(orgId);
-        allow delete: if admin(orgId);
+        // Workspace-originated dispatch records are written/reviewed only by
+        // privileged Cloud Functions, not altered directly by mobile clients.
+        allow create: if (operations(orgId) || driver(orgId)) &&
+          (!('source' in request.resource.data) ||
+            request.resource.data.source != 'tekntandao_workspace');
+        allow update: if (operations(orgId) || driver(orgId)) &&
+          (!('source' in resource.data) ||
+            resource.data.source != 'tekntandao_workspace') &&
+          (!('source' in request.resource.data) ||
+            request.resource.data.source != 'tekntandao_workspace');
+        allow delete: if admin(orgId) &&
+          (!('source' in resource.data) ||
+            resource.data.source != 'tekntandao_workspace');
       }
 
       match /alerts/{id} {
@@ -89,7 +100,7 @@ service cloud.firestore {
 
       match /{collection}/{id} {
         allow read: if collection != 'workspaceConnections' && member(orgId);
-        allow write: if collection != 'workspaceConnections' && admin(orgId);
+        allow write: if collection != 'workspaceConnections' && collection != 'trips' && admin(orgId);
       }
     }
   }
