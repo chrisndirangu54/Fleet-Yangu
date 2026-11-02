@@ -135,7 +135,7 @@ class _Dashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final engine = FleetRiskEngine();
+    final engine = const FleetRiskEngine();
     final avgHealth = demoVehicles.map((e) => e.healthScore).reduce((a,b)=>a+b) / demoVehicles.length;
     final highRisk = demoVehicles.where((v) => engine.assess(v).level.index >= RiskLevel.high.index).length;
     return ListView(
@@ -242,12 +242,12 @@ class _ModulePage extends StatelessWidget {
 
 class _SafetyBanner extends StatelessWidget {
   const _SafetyBanner();
-  @override Widget build(BuildContext context) => Card(child: ListTile(leading: const Icon(Icons.shield_outlined), title: const Text('Safety-first control plane'), subtitle: const Text('ECU and safety-critical actuator commands remain read-only or disabled by default. Any future vehicle control requires signed commands, role approval, vehicle-state validation and an auditable trusted gateway.')));
+  @override Widget build(BuildContext context) => const Card(child: ListTile(leading: Icon(Icons.shield_outlined), title: const Text('Safety-first control plane'), subtitle: const Text('ECU and safety-critical actuator commands remain read-only or disabled by default. Any future vehicle control requires signed commands, role approval, vehicle-state validation and an auditable trusted gateway.')));
 }
 
 class _VehiclesPage extends StatelessWidget {
   const _VehiclesPage();
-  @override Widget build(BuildContext context) { final engine = FleetRiskEngine(); return ListView(padding: const EdgeInsets.all(24), children: [Text('Vehicles & Digital Twins', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text('A persistent lifecycle record for mechanical condition, parts, service, drivers, incidents, fuel, tyres, cargo and operating cost.'), const SizedBox(height: 16), ...demoVehicles.map((v)=>_VehicleCard(vehicle:v, assessment:engine.assess(v)))]); }
+  @override Widget build(BuildContext context) { final engine = const FleetRiskEngine(); return ListView(padding: const EdgeInsets.all(24), children: [Text('Vehicles & Digital Twins', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text('A persistent lifecycle record for mechanical condition, parts, service, drivers, incidents, fuel, tyres, cargo and operating cost.'), const SizedBox(height: 16), ...demoVehicles.map((v)=>_VehicleCard(vehicle:v, assessment:engine.assess(v)))]); }
 }
 
 class _RiskPage extends StatelessWidget {
@@ -255,7 +255,7 @@ class _RiskPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final engine = FleetRiskEngine();
+    final engine = const FleetRiskEngine();
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
